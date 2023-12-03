@@ -13,7 +13,6 @@ messagesRef.on("value", snap => {
     //const event = new Event('build');
     //document.getElementById("mess").dispatchEvent(event);
     messagesSort(messages, -1);
-    createMessagesTable(messages);
     createMessagesCards(messages);
 });
 
@@ -76,63 +75,6 @@ function formatDateTimeFromTicks(nTicks)
     return new Date(nTicks).toLocaleString();
 }
 
-
-function createMessagesTable(messages){
-    const messDiv = document.querySelector("#messages") // Find the messages div in our html
-    let tableHeaders = ["Created At(UTC)", "Created By", "Message"]
-    const createTable = () => {
-        while (messDiv.firstChild) messDiv.removeChild(messDiv.firstChild) // Remove all children from messages div (if any)
-        let messagesTable = document.createElement('table') // Create the table itself
-        messagesTable.className = "messTable table table-hover";// 'messTable';   table-sm table-responsive table table-hover
-        let messagesTableHead = document.createElement('thead'); // Creates the table header group element
-        messagesTableHead.className = 'messTableHead';
-        let messagesTableHeaderRow = document.createElement('tr') // Creates the row that will contain the headers
-        messagesTableHeaderRow.className = 'messTableHeaderRow bg-secondary';
-        // Will iterate over all the strings in the tableHeader array and will append the header cells to the table header row
-        tableHeaders.forEach(header => {
-            let messageHeader = document.createElement('th') // Creates the current header cell during a specific iteration
-            messageHeader.innerText = header
-            messagesTableHeaderRow.append(messageHeader) // Appends the current header cell to the header row
-        })
-        messagesTableHead.append(messagesTableHeaderRow) // Appends the header row to the table header group element
-        messagesTable.append(messagesTableHead)
-        let messagesTableBody = document.createElement('tbody') // Creates the table body group element
-        messagesTableBody.className = "messTable-Body"
-        messagesTable.append(messagesTableBody) // Appends the table body group element to the table
-        messDiv.append(messagesTable) // Appends the table to the messages div
-        return messagesTable;
-    }
-  
-    //The function below adds every message as a Table row
-    const appendMessages = (messagesTable, messages) => {
-
-        messages.forEach(message => {
-            let messagesTableBodyRow = document.createElement('tr') // Create the current table row
-            messagesTableBodyRow.className = 'messTableBodyRow'
-            
-            let createdAt= document.createElement('td')
-            createdAt.innerText = formatDateTimeFromTicks(message.createdAt);
-            let createdBy= document.createElement('td')
-            createdBy.innerText = message.createdBy;
-            let messageText= document.createElement('td')
-            messageText.innerText = message.messageText;
-            
-
-            messagesTableBodyRow.append(createdAt, createdBy, messageText)
-
-            
-            
-            messagesTable.append(messagesTableBodyRow) // Append the current row to the messages table body
-        })
-        
-    }
-
-     
-    appendMessages(createTable(), messages);
-    
-
-}
-
 function messagesSort(messages, sortOrder=1){
 
     if ((sortOrder !== 1 && sortOrder !== -1) || !messages)
@@ -153,7 +95,7 @@ function messagesSort(messages, sortOrder=1){
 
 
 function createMessagesCards(messages){
-    const messDiv = document.querySelector("#messages1") // Find the messages div in our html
+    const messDiv = document.querySelector("#messages") // Find the messages div in our html
     const removeOldCards = () => {
         while (messDiv.firstChild) messDiv.removeChild(messDiv.firstChild) // Remove all children from messages div (if any)
     }
@@ -171,13 +113,16 @@ function createMessagesCards(messages){
         cardText.innerText = formatDateTimeFromTicks(message.createdAt);
         let button = document.createElement('button');
         button.className="btn liked btn-sm";
-        button.innerText="Like";
+        button.innerText="Like"; //change to thumbs up image
         button.id=message.id;
         cardBody.append(cardTitle, cardText, button);
         if (message.likes) {        
             let cardFooter = document.createElement("div");
-            cardFooter.className = "card-footer liked text-muted";
-            cardFooter.innerText = message.likes + " Likes";
+            cardFooter.className = "card-footer liked";
+            if (message.likes == 1)
+                cardFooter.innerText = message.likes + " Like";
+            else    
+                cardFooter.innerText = message.likes + " Likes";
            // card.className = "card liked text-dark";
             card.append(cardBody,cardFooter);
         } else {
@@ -202,7 +147,7 @@ function createMessagesCards(messages){
     }
     // The function below adds every message as a card
     const appendMessages = (messages) => {        
-        const messDiv = document.querySelector("#messages1");
+        const messDiv = document.querySelector("#messages");
         messages.forEach(message => {
             card = createCard(message);
             messDiv.append(card);
