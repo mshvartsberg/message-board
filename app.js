@@ -6,7 +6,9 @@ var messages = [];
 messagesRef.on("value", snap => {
     messages = [];
     snap.forEach(val => {
-        messages.push( val.val());     
+        var message = val.val();
+        message.id= val.key;
+        messages.push(message);     
     });
     //const event = new Event('build');
     //document.getElementById("mess").dispatchEvent(event);
@@ -58,7 +60,9 @@ function saveMessage(messageText) {
     var message = {
         createdAt: getCurrentTimeUTC(), //Date.now(),
         messageText: messageText,
-        createdBy: "Anonymous User"
+        createdBy: "Anonymous User",
+        likes: 0,
+        liked: false
     }
     var newMessageRef = messagesRef.push();
     newMessageRef.set(message);
@@ -155,9 +159,9 @@ function createMessagesCards(messages){
     }
 
     createCard = (message) =>{
-        let card = document.createElement("div");
-        card.className = "card bg-light text-dark";
-        let cardBody = document.createElement("div");
+        let card = document.createElement("div"); 
+        card.className = "card bg-light text-dark";       
+        let cardBody = document.createElement("div");        
         cardBody.className = "card-body";
         let cardTitle = document.createElement("h5");
         cardTitle.className = "card-title";
@@ -165,9 +169,36 @@ function createMessagesCards(messages){
         let cardText = document.createElement("p");
         cardText.className = "card-text";
         cardText.innerText = formatDateTimeFromTicks(message.createdAt);
-        cardBody.append(cardTitle, cardText);
-        card.append(cardBody);
+        let button = document.createElement('button');
+        button.className="btn liked btn-sm";
+        button.innerText="Like";
+        button.id=message.id;
+        cardBody.append(cardTitle, cardText, button);
+        if (message.likes) {        
+            let cardFooter = document.createElement("div");
+            cardFooter.className = "card-footer liked text-muted";
+            cardFooter.innerText = message.likes + " Likes";
+           // card.className = "card liked text-dark";
+            card.append(cardBody,cardFooter);
+        } else {
+            card.append(cardBody);
+        }     
+        
+
         return card;
+    }
+
+    function like(id, likes){
+        console.log(id);
+        var messageRef = firebase.database().ref('Messages/' + id);
+        messageRef.update({likes: likes})
+        .then(() => {
+            console.log("Update Successfull")
+        })
+        .catch(error => {
+            console.log(error);
+        });
+        return false;
     }
     // The function below adds every message as a card
     const appendMessages = (messages) => {        
@@ -175,6 +206,10 @@ function createMessagesCards(messages){
         messages.forEach(message => {
             card = createCard(message);
             messDiv.append(card);
+            var cardButton = document.getElementById(message.id);
+            var likes = message.likes > 0 ? message.likes + 1: 1;
+            cardButton.addEventListener('click', like.bind(null, message.id, likes),false);
+        
         })
         
     }
@@ -183,5 +218,4 @@ function createMessagesCards(messages){
     
 
 }
-
 
