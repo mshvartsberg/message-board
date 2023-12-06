@@ -1,7 +1,8 @@
+//Reference to a database Messages collection
 var messagesRef = firebase.database()
     .ref('Messages'); 
 
-
+//Read all messages, sort them and create messages cards
 var messages = [];
 messagesRef.on("value", snap => {
     messages = [];
@@ -10,8 +11,6 @@ messagesRef.on("value", snap => {
         message.id= val.key;
         messages.push(message);     
     });
-    //const event = new Event('build');
-    //document.getElementById("mess").dispatchEvent(event);
     messagesSort(messages, -1);
     createMessagesCards(messages);
 });
@@ -32,7 +31,7 @@ function submitForm(e) {
       }
 
 
-    // Get values
+    // Get message value, save message and reset the form
     var messageText = getInputVal('message');
     saveMessage(messageText);
     alert("Thank you, your message was posted");
@@ -41,23 +40,16 @@ function submitForm(e) {
 }
 
 // Function to get get form values
-function getInputVal(id) {
+getInputVal = (id) => {
     return document.getElementById(id).value;
 }
 
-function getCurrentTimeUTC()
-{
-    //RETURN:
-    //      = number of milliseconds between current UTC time and midnight of January 1, 1970
-    var tmLoc = new Date();
-    //The offset is in minutes -- convert it to ms
-    return tmLoc.getTime() + tmLoc.getTimezoneOffset() * 60000;
-}
 
-// Save recommendations to firebase
-function saveMessage(messageText) {
+
+// Save message to firebase
+saveMessage = (messageText) => {
     var message = {
-        createdAt: getCurrentTimeUTC(), //Date.now(),
+        createdAt: getCurrentTimeUTC(),
         messageText: messageText,
         createdBy: "Anonymous User",
         likes: 0,
@@ -67,15 +59,25 @@ function saveMessage(messageText) {
     newMessageRef.set(message);
 }
 
-function formatDateTimeFromTicks(nTicks)
+getCurrentTimeUTC = () =>
+{
+    //RETURN:
+    //      = number of milliseconds between current UTC time and midnight of January 1, 1970
+    var tmLoc = new Date();
+    //The offset is in minutes -- convert it to ms
+    return tmLoc.getTime() + tmLoc.getTimezoneOffset() * 60000;
+}
+
+formatDateTimeFromTicks = (nTicks)=>
 {
     //'nTicks' = number of milliseconds since midnight of January 1, 1970
     //RETURN:
     //      = Formatted date/time
-    return new Date(nTicks).toLocaleString();
+    var tmLoc = new Date();
+    return new Date(nTicks-tmLoc.getTimezoneOffset()*60000).toLocaleString();
 }
 
-function messagesSort(messages, sortOrder=1){
+messagesSort = (messages, sortOrder=1) =>{
 
     if ((sortOrder !== 1 && sortOrder !== -1) || !messages)
         return messages;
@@ -93,8 +95,8 @@ function messagesSort(messages, sortOrder=1){
 
 }
 
-
-function createMessagesCards(messages){
+//This function removed all existing cards (if any), creates a new card for every message and wires up "likes" functionality
+createMessagesCards = (messages) => {
     const messDiv = document.querySelector("#messages") // Find the messages div in our html
     const removeOldCards = () => {
         while (messDiv.firstChild) messDiv.removeChild(messDiv.firstChild) // Remove all children from messages div (if any)
@@ -102,7 +104,7 @@ function createMessagesCards(messages){
 
     createCard = (message) =>{
         let card = document.createElement("div"); 
-        card.className = "card bg-light text-dark";       
+        card.className = "card message bg-light text-dark";       
         let cardBody = document.createElement("div");        
         cardBody.className = "card-body";
         let cardTitle = document.createElement("h5");
@@ -111,19 +113,14 @@ function createMessagesCards(messages){
         let cardText = document.createElement("p");
         cardText.className = "card-text";
         cardText.innerText = formatDateTimeFromTicks(message.createdAt);
-        let button = document.createElement('button');
-        button.className="btn liked btn-sm";
-        button.innerText="Like"; //change to thumbs up image
+        let button = document.createElement('i');
+        button.className="fa fa-thumbs-up liked-icon";
         button.id=message.id;
         cardBody.append(cardTitle, cardText, button);
         if (message.likes) {        
             let cardFooter = document.createElement("div");
             cardFooter.className = "card-footer liked";
-            if (message.likes == 1)
-                cardFooter.innerText = message.likes + " Like";
-            else    
-                cardFooter.innerText = message.likes + " Likes";
-           // card.className = "card liked text-dark";
+            cardFooter.innerText = message.likes + " Like" + (message.likes == 1 ? "" : "s");
             card.append(cardBody,cardFooter);
         } else {
             card.append(cardBody);
@@ -133,8 +130,8 @@ function createMessagesCards(messages){
         return card;
     }
 
-    function like(id, likes){
-        console.log(id);
+    //This Function is called when Thumbup button is clicked
+    like = (id, likes) => {
         var messageRef = firebase.database().ref('Messages/' + id);
         messageRef.update({likes: likes})
         .then(() => {
@@ -163,4 +160,3 @@ function createMessagesCards(messages){
     
 
 }
-
