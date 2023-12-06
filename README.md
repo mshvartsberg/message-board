@@ -9,10 +9,11 @@ Simple JS FireBase Message Board Project
 ## Pre-reqs
 - Create a new Firebase Project in Google Portal https://console.firebase.google.com/ or get credentials how to connect to an existing project
 
-## Technology Used
+## Technology/Libraries Used
 - Project is written using Javascript
 - Data is stored in the Google Firebase in the Cloud
 - Bootstrap library is used for styling
+- Font-awesome for icons
 
 ### Application Components
 - index.html - main HTML file containing UI
